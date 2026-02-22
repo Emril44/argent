@@ -1,0 +1,22 @@
+spring:
+  jackson:
+    time-zone: UTC
+  datasource:
+    url: jdbc:postgresql://localhost:5433/argent?options=-c%20TimeZone%3DUTC
+    username: argent
+    password: argent
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+
+logging:
+  level:
+    com.zaxxer.hikari: INFO
