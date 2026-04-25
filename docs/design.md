@@ -117,8 +117,8 @@ Invariants:
 Encapsulated value object:
 
 - BigDecimal amount  
-- Fixed scale  
-- Explicit rounding mode  
+- Fixed scale (2 digits after decimal point)
+- Explicit rounding mode (2 digits after decimal point)  
 - No raw manipulation outside Money class
 
 # **SYSTEM INVARIANTS**
