@@ -9,7 +9,7 @@ import java.math.BigInteger;
 import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-public class MoneyValueTest {
+public class MoneyModelTest {
     @Test
     public void throwWhenMoneyNegative() {
         Exception exception = assertThrows(NegativeMoneyException.class,() -> {

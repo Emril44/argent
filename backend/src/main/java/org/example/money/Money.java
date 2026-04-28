@@ -27,6 +27,9 @@ public class Money {
         return moneyAmount.compareTo(money.moneyAmount) == 0; // should return 1, ergo true
     }
 
+    public boolean isZero() {
+        return this.getMoneyAmount().equals(new BigDecimal("0.00"));
+    }
 
     @Override
     public int hashCode() {
