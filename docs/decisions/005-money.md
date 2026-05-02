@@ -12,7 +12,7 @@ Financial values require deterministic arithmetic. Floating-point types introduc
 ## Decision
 Argent will represent monetary values as a `Money` value object wrapping `BigDecimal`:
 - Fixed scale (e.g., 2 for V1)
-- Explicit rounding mode (e.g., HALF_EVEN)
+- Explicit rounding mode (e.g., HALF_UP)
 - No direct BigDecimal arithmetic outside Money
 
 ## Rationale

@@ -1,7 +1,6 @@
 package org.example.wallet;
 
-import org.example.exceptions.IllegalWalletStatusException;
-import org.example.exceptions.InsufficientFundsException;
+import org.example.exceptions.IllegalStatusTransitionException;
 import org.example.money.Money;
 import org.example.user.User;
 
@@ -54,38 +53,38 @@ public class Wallet {
 
     public void freeze() {
         if(this.getStatus().equals(WalletStatus.CLOSED))
-            throw new IllegalWalletStatusException("Closed Wallets cannot be frozen!");
+            throw new IllegalStatusTransitionException("Closed Wallets cannot be frozen!");
 
         this.setStatus(WalletStatus.FROZEN);
     }
 
     public void unfreeze() {
         if(this.getStatus().equals(WalletStatus.CLOSED))
-            throw new IllegalWalletStatusException("Closed Wallets cannot be unfrozen!");
+            throw new IllegalStatusTransitionException("Closed Wallets cannot be unfrozen!");
 
         this.setStatus(WalletStatus.ACTIVE);
     }
 
     public void close() {
         if(!this.getBalance().isZero())
-            throw new IllegalWalletStatusException("Cannot close Wallet with existing balance!");
+            throw new IllegalStatusTransitionException("Cannot close Wallet with existing balance!");
 
         if(this.getStatus().equals(WalletStatus.FROZEN))
-            throw new IllegalWalletStatusException("Frozen accounts cannot be closed!");
+            throw new IllegalStatusTransitionException("Frozen accounts cannot be closed!");
 
         this.setStatus(WalletStatus.CLOSED);
     }
 
     public void deposit(Money newMoney) {
         if(this.getStatus().equals(WalletStatus.FROZEN) || this.getStatus().equals(WalletStatus.CLOSED))
-            throw new IllegalWalletStatusException("Cannot deposit funds!");
+            throw new IllegalStatusTransitionException("Cannot deposit funds!");
         Money currentMoney = this.getBalance().add(newMoney);
         this.setBalance(currentMoney);
     }
 
     public void debit(Money takenMoney) {
         if(this.getStatus().equals(WalletStatus.FROZEN) || this.getStatus().equals(WalletStatus.CLOSED))
-            throw new IllegalWalletStatusException("Cannot debit funds!");
+            throw new IllegalStatusTransitionException("Cannot debit funds!");
         Money currentMoney = this.getBalance().subtract(takenMoney);
         this.setBalance(currentMoney);
     }
