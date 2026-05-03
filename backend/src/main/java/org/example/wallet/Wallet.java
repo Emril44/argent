@@ -52,15 +52,15 @@ public class Wallet {
     }
 
     public void freeze() {
-        if(this.getStatus().equals(WalletStatus.CLOSED))
-            throw new IllegalStatusTransitionException("Closed Wallets cannot be frozen!");
+        if(this.getStatus().equals(WalletStatus.CLOSED) || this.getStatus().equals(WalletStatus.FROZEN))
+            throw new IllegalStatusTransitionException("Closed/Frozen Wallets cannot be frozen!");
 
         this.setStatus(WalletStatus.FROZEN);
     }
 
     public void unfreeze() {
-        if(this.getStatus().equals(WalletStatus.CLOSED))
-            throw new IllegalStatusTransitionException("Closed Wallets cannot be unfrozen!");
+        if(this.getStatus().equals(WalletStatus.CLOSED) || this.getStatus().equals(WalletStatus.ACTIVE))
+            throw new IllegalStatusTransitionException("Active/Closed Wallets cannot be unfrozen!");
 
         this.setStatus(WalletStatus.ACTIVE);
     }

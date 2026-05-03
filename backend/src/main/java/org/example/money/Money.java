@@ -21,14 +21,14 @@ public class Money {
 
     @Override
     public boolean equals(Object o) {
-        if (o == this) return true; // if object is itself, it's true
+        if (o == this) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Money money = (Money) o;
-        return moneyAmount.compareTo(money.moneyAmount) == 0; // should return 1, ergo true
+        return moneyAmount.compareTo(money.moneyAmount) == 0;
     }
 
     public boolean isZero() {
-        return this.getMoneyAmount().equals(new BigDecimal("0.00"));
+        return this.getMoneyAmount().compareTo(new BigDecimal("0.00")) == 0;
     }
 
     @Override

@@ -6,6 +6,7 @@ import org.example.wallet.Wallet;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,7 +16,7 @@ public class User {
     private final String name;
     private final String email;
     private String passwordHash;
-    UserStatus status;
+    private UserStatus status;
     private final LocalDateTime createdAt;
     private List<Wallet> userWallets;
 
@@ -58,7 +59,7 @@ public class User {
     }
 
     public List<Wallet> getUserWallets() {
-        return userWallets;
+        return Collections.unmodifiableList(userWallets);
     }
 
     public Wallet openWallet() {
