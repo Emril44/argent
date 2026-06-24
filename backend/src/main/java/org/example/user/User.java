@@ -30,6 +30,16 @@ public class User {
         this.userWallets = new ArrayList<>();
     }
 
+    private User(UUID uuid, String name, String email, String passwordHash, UserStatus status, LocalDateTime createdAt, List<Wallet> wallets) {
+        this.id = uuid;
+        this.name = name;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.status = status;
+        this.createdAt = createdAt;
+        this.userWallets = wallets;
+    }
+
     public UUID getId() {
         return id;
     }
@@ -42,9 +52,7 @@ public class User {
         return email;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
-    }
+    public String getPasswordHash() {return passwordHash;}
 
     public UserStatus getStatus() {
         return status;
@@ -84,5 +92,23 @@ public class User {
             throw new IllegalStatusTransitionException("User is already locked!");
 
         this.setStatus(UserStatus.LOCKED);
+    }
+
+    // Persistence-only: rebuilds a User from stored data without generating a new ID
+    static User reconstitute(UUID id, String name, String email, String passwordHash, UserStatus status, LocalDateTime createdAt) {
+        List<Wallet> wallets = new ArrayList<>();
+        return new User(id, name, email, passwordHash, status, createdAt, wallets);
+    }
+
+    // Two-phase construction: resolves circular User<->Wallet dependency during reconstitution
+    void hydrateWallets(List<Wallet> wallets) {
+        if(!this.userWallets.isEmpty())
+            throw new IllegalStateException("Wallets must be empty for hydration!");
+
+        this.userWallets = wallets;
+    }
+
+    public UserEntity mapUserToEntity() {
+        return new UserEntity(this.getId(), this.getName(), this.getEmail(), this.getPasswordHash(), this.getStatus(), this.getCreatedAt(), this.getUserWallets());
     }
 }

@@ -3,9 +3,12 @@ package org.example.wallet;
 import org.example.exceptions.IllegalStatusTransitionException;
 import org.example.money.Money;
 import org.example.user.User;
+import org.example.user.UserEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class Wallet {
@@ -21,6 +24,14 @@ public class Wallet {
         this.balance = new Money(new BigDecimal("0.00"));
         this.status = WalletStatus.ACTIVE;
         this.createdAt = LocalDateTime.now();
+    }
+
+    private Wallet(UUID id, User owner, Money balance, WalletStatus status, LocalDateTime createdAt) {
+        this.id = id;
+        this.owner = owner;
+        this.balance = balance;
+        this.status = status;
+        this.createdAt = createdAt;
     }
 
     public UUID getId() {
@@ -87,5 +98,24 @@ public class Wallet {
             throw new IllegalStatusTransitionException("Cannot debit funds!");
         Money currentMoney = this.getBalance().subtract(takenMoney);
         this.setBalance(currentMoney);
+    }
+
+    static Wallet reconstitute(UUID id, User owner, Money balance, WalletStatus status, LocalDateTime createdAt) {
+        return new Wallet(id, owner, balance, status, createdAt);
+    }
+
+    public static List<WalletEntity> mapWalletsToEntities(List<Wallet> userWallets, UserEntity userEntity) {
+        List<WalletEntity> mappedEntities = new ArrayList<>();
+
+        for (Wallet wallet : userWallets) {
+            WalletEntity newEntity = wallet.mapWalletToEntity(userEntity);
+            mappedEntities.add(newEntity);
+        }
+
+        return mappedEntities;
+    }
+
+    public WalletEntity mapWalletToEntity(UserEntity userEntity) {
+        return new WalletEntity(this.getId(), userEntity, this.getBalance(), this.getStatus(), this.getCreatedAt());
     }
 }
