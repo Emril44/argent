@@ -2,6 +2,7 @@ package org.example.transaction;
 
 import org.example.exceptions.IllegalStatusTransitionException;
 import org.example.money.Money;
+import org.example.money.MoneyEntity;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -58,6 +59,10 @@ public class Transaction {
         return new Transaction(id, sourceWalletId, destinationWalletId, amount, type, status, createdAt, null);
     }
 
+    static Transaction reconstitute(UUID id, UUID sourceId, UUID destinationId, Money amount, TransactionType type, TransactionStatus status, LocalDateTime createdAt, LocalDateTime processedAt) {
+        return new Transaction(id, sourceId, destinationId, amount, type, status, createdAt, processedAt);
+    }
+
     public void complete() {
         if(this.isTerminal())
             throw new IllegalStatusTransitionException("Terminal status reached!");
@@ -112,5 +117,9 @@ public class Transaction {
 
     private void setTransactionStatus(TransactionStatus status) {
         this.transactionStatus = status;
+    }
+
+    public TransactionEntity mapTransactionToEntity() {
+        return new TransactionEntity(this.getId(), this.getSourceWalletId().orElse(null), this.getDestinationWalletId().orElse(null), this.getAmount(), this.getTransactionType(), this.getTransactionStatus(), this.getCreatedAt(), this.getProcessedAt().orElse(null));
     }
 }
