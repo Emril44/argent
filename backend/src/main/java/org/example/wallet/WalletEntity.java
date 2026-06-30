@@ -80,7 +80,7 @@ public class WalletEntity {
         return mappedWallets;
     }
 
-    private Wallet mapEntityToWallet(User owner) {
+    public Wallet mapEntityToWallet(User owner) {
         return Wallet.reconstitute(this.getId(), owner, this.getBalance().mapEntityToMoney(), this.getStatus(), this.getCreatedAt());
     }
 }
