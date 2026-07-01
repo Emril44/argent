@@ -66,4 +66,25 @@ public class TransactionService {
 
         return transaction;
     }
+
+    @Transactional
+    public Transaction transfer(UUID authenticatedUserId, UUID sourceWalletId, UUID destinationWalletId, Money amount) {
+        if(!walletService.verifyOwnership(sourceWalletId, authenticatedUserId))
+            throw new IllegalArgumentException("User doesn't own this wallet!");
+
+        Transaction transaction = Transaction.transfer(sourceWalletId, destinationWalletId, amount);
+        TransactionEntity transactionEntity = transaction.mapTransactionToEntity();
+        transactionRepository.save(transactionEntity);
+
+        // TODO: experiment with thread sleep for TRANSFER concurrency testing
+        if(walletService.transfer(sourceWalletId, destinationWalletId, amount))
+            transaction.complete();
+        else
+            transaction.fail();
+
+        transactionEntity = transaction.mapTransactionToEntity();
+        transactionRepository.save(transactionEntity);
+
+        return transaction;
+    }
 }
