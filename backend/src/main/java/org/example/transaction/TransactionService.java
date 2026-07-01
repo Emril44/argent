@@ -35,9 +35,32 @@ public class TransactionService {
         TransactionEntity transactionEntity = transaction.mapTransactionToEntity();
         transactionRepository.save(transactionEntity);
 
-        // TODO: experiment with thread sleep for concurrency testing
+        // TODO: experiment with thread sleep for DEPOSIT concurrency testing
         walletService.credit(destinationWalletId, amount);
         transaction.complete();
+        transactionEntity = transaction.mapTransactionToEntity();
+        transactionRepository.save(transactionEntity);
+
+        return transaction;
+    }
+
+    @Transactional
+    public Transaction withdraw(UUID authenticatedUserId, UUID sourceWalletId, Money amount) {
+        if(!walletService.verifyOwnership(sourceWalletId, authenticatedUserId))
+            throw new IllegalArgumentException("User doesn't own this wallet!");
+
+        Transaction transaction = Transaction.withdraw(sourceWalletId, amount);
+        TransactionEntity transactionEntity = transaction.mapTransactionToEntity();
+        transactionRepository.save(transactionEntity);
+
+        // TODO: experiment with thread sleep for WITHDRAW concurrency testing
+        if(walletService.debit(sourceWalletId, amount)) {
+            transaction.complete();
+        }
+        else {
+            transaction.fail();
+        }
+
         transactionEntity = transaction.mapTransactionToEntity();
         transactionRepository.save(transactionEntity);
 

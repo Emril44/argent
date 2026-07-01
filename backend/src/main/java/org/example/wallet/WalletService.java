@@ -1,5 +1,6 @@
 package org.example.wallet;
 
+import org.example.exceptions.InsufficientFundsException;
 import org.example.money.Money;
 import org.example.user.UserEntity;
 import org.example.user.UserRepository;
@@ -31,6 +32,21 @@ public class WalletService {
 
         loadedEntity = wallet.mapWalletToEntity(owner);
         walletRepository.save(loadedEntity);
+    }
+
+    public boolean debit(UUID sourceWalletId, Money amount) {
+        WalletEntity loadedEntity = this.loadEntity(sourceWalletId);
+        UserEntity owner = userRepository.findById(loadedEntity.getOwner().getId()).orElseThrow();
+        Wallet wallet = loadedEntity.mapEntityToWallet(owner.mapEntityToUser());
+
+        try {
+            wallet.debit(amount);
+        } catch (InsufficientFundsException e) {
+            return false;
+        }
+        loadedEntity = wallet.mapWalletToEntity(owner);
+        walletRepository.save(loadedEntity);
+        return true;
     }
 
     private WalletEntity loadEntity(UUID walletId) {
