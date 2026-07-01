@@ -1,11 +1,13 @@
 package org.example.money;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
 import java.math.BigDecimal;
 
 @Embeddable
 public class MoneyEntity {
+    @Column(name = "balance")
     private BigDecimal amount;
 
     public MoneyEntity() {

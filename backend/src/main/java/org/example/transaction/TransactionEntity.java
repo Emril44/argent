@@ -20,6 +20,7 @@ public class TransactionEntity {
     private UUID destinationId;
 
     @Embedded
+    @AttributeOverride(name = "amount", column = @Column(name="amount"))
     private MoneyEntity amount;
 
     @Enumerated(EnumType.STRING)
