@@ -6,6 +6,7 @@ import org.example.user.UserEntity;
 import org.example.user.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -21,6 +22,11 @@ public class WalletService {
     public boolean verifyOwnership(UUID walletId, UUID authenticatedUserId) {
         WalletEntity loadedEntity = this.loadEntity(walletId);
         return loadedEntity.getOwner().getId().equals(authenticatedUserId);
+    }
+
+    public boolean verifyOwnershipWithoutLock(UUID walletId, UUID authenticatedUserId) {
+        Optional<UUID> userWalletId = walletRepository.findUserWalletId(walletId, authenticatedUserId);
+        return userWalletId.isPresent();
     }
 
     public void credit(UUID destinationWalletId, Money amount) {

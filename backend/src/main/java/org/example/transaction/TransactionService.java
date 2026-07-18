@@ -35,7 +35,15 @@ public class TransactionService {
         TransactionEntity transactionEntity = transaction.mapTransactionToEntity();
         transactionRepository.save(transactionEntity);
 
-        // TODO: experiment with thread sleep for DEPOSIT concurrency testing
+        try {
+            Thread.sleep((long) (Math.random() * 1000));
+        } catch (InterruptedException e) {
+            System.out.println("Transfer interrupted");
+            transaction.fail();
+            transactionEntity = transaction.mapTransactionToEntity();
+            transactionRepository.save(transactionEntity);
+            return transaction;
+        }
         walletService.credit(destinationWalletId, amount);
         transaction.complete();
         transactionEntity = transaction.mapTransactionToEntity();
@@ -53,7 +61,15 @@ public class TransactionService {
         TransactionEntity transactionEntity = transaction.mapTransactionToEntity();
         transactionRepository.save(transactionEntity);
 
-        // TODO: experiment with thread sleep for WITHDRAW concurrency testing
+        try {
+            Thread.sleep((long) (Math.random() * 1000));
+        } catch (InterruptedException e) {
+            System.out.println("Transfer interrupted");
+            transaction.fail();
+            transactionEntity = transaction.mapTransactionToEntity();
+            transactionRepository.save(transactionEntity);
+            return transaction;
+        }
         if(walletService.debit(sourceWalletId, amount)) {
             transaction.complete();
         }
@@ -69,14 +85,22 @@ public class TransactionService {
 
     @Transactional
     public Transaction transfer(UUID authenticatedUserId, UUID sourceWalletId, UUID destinationWalletId, Money amount) {
-        if(!walletService.verifyOwnership(sourceWalletId, authenticatedUserId))
+        if(!walletService.verifyOwnershipWithoutLock(sourceWalletId, authenticatedUserId))
             throw new IllegalArgumentException("User doesn't own this wallet!");
 
         Transaction transaction = Transaction.transfer(sourceWalletId, destinationWalletId, amount);
         TransactionEntity transactionEntity = transaction.mapTransactionToEntity();
         transactionRepository.save(transactionEntity);
 
-        // TODO: experiment with thread sleep for TRANSFER concurrency testing
+        try {
+            Thread.sleep((long) (Math.random() * 1000));
+        } catch (InterruptedException e) {
+            System.out.println("Transfer interrupted");
+            transaction.fail();
+            transactionEntity = transaction.mapTransactionToEntity();
+            transactionRepository.save(transactionEntity);
+            return transaction;
+        }
         if(walletService.transfer(sourceWalletId, destinationWalletId, amount))
             transaction.complete();
         else

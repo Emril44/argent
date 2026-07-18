@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -16,4 +17,7 @@ public interface WalletRepository extends JpaRepository<WalletEntity, UUID> {
     @Query("SELECT w FROM WalletEntity w WHERE w.id = :id")
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     WalletEntity findByIdWithLock(UUID id);
+
+    @Query("SELECT w.id FROM WalletEntity w WHERE w.id = :walletId AND w.owner.id = :ownerId")
+    Optional<UUID> findUserWalletId(UUID walletId, UUID ownerId);
 }
