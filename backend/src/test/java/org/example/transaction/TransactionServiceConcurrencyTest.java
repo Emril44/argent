@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -67,7 +68,7 @@ public class TransactionServiceConcurrencyTest {
             executor.submit(() -> {
                 try {
                     startLatch.await();
-                    Transaction transaction = transactionService.withdraw(dude.getId(), dudeWallet.getId(), new Money(new BigDecimal("150.00")));
+                    Transaction transaction = transactionService.withdraw(dude.getId(), UUID.randomUUID(), dudeWallet.getId(), new Money(new BigDecimal("150.00")));
                     finishedTransactions.add(transaction);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -113,7 +114,7 @@ public class TransactionServiceConcurrencyTest {
         executor.submit(() -> {
             try {
                 startLatch.await();
-                Transaction transferOne = transactionService.transfer(dude.getId(), dudeWallet.getId(), manWallet.getId(), new Money(new BigDecimal("100.00")));
+                Transaction transferOne = transactionService.transfer(dude.getId(), UUID.randomUUID(), dudeWallet.getId(), manWallet.getId(), new Money(new BigDecimal("100.00")));
                 finishedTransactions.add(transferOne);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -125,7 +126,7 @@ public class TransactionServiceConcurrencyTest {
         executor.submit(() -> {
             try {
                 startLatch.await();
-                Transaction transferTwo = transactionService.transfer(man.getId(), manWallet.getId(), dudeWallet.getId(), new Money(new BigDecimal("100.00")));
+                Transaction transferTwo = transactionService.transfer(man.getId(), UUID.randomUUID(), manWallet.getId(), dudeWallet.getId(), new Money(new BigDecimal("100.00")));
                 finishedTransactions.add(transferTwo);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

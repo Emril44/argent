@@ -2,36 +2,34 @@ package org.example.transaction;
 
 import jakarta.transaction.Transactional;
 import org.example.money.Money;
-import org.example.user.UserEntity;
-import org.example.user.UserRepository;
-import org.example.wallet.Wallet;
-import org.example.wallet.WalletEntity;
-import org.example.wallet.WalletRepository;
 import org.example.wallet.WalletService;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class TransactionService {
     private final WalletService walletService;
     private final TransactionRepository transactionRepository;
-    private final WalletRepository walletRepository;
-    private final UserRepository userRepository;
 
-    public TransactionService(WalletService walletService, TransactionRepository transactionRepository, WalletRepository walletRepository, UserRepository userRepository) {
+    public TransactionService(WalletService walletService, TransactionRepository transactionRepository) {
         this.walletService = walletService;
         this.transactionRepository = transactionRepository;
-        this.walletRepository = walletRepository;
-        this.userRepository = userRepository;
     }
 
     @Transactional
-    public Transaction deposit(UUID authenticatedUserId, UUID destinationWalletId, Money amount) {
-        if(!walletService.verifyOwnership(destinationWalletId, authenticatedUserId))
-            throw new IllegalArgumentException("User doesn't own this wallet!");
+    public Transaction deposit(UUID authenticatedUserId, UUID idempotencyKey, UUID destinationWalletId, Money amount) {
+        Optional<TransactionEntity> dupeTransaction = transactionRepository.findByIdempotencyKey(idempotencyKey);
+        if(dupeTransaction.isPresent()) {
+            return dupeTransaction.get().mapEntityToTransaction();
+        }
 
-        Transaction transaction = Transaction.deposit(destinationWalletId, amount);
+        if(!walletService.verifyOwnership(destinationWalletId, authenticatedUserId)) {
+            throw new IllegalArgumentException("User doesn't own this wallet!");
+        }
+
+        Transaction transaction = Transaction.deposit(destinationWalletId, idempotencyKey, amount);
         TransactionEntity transactionEntity = transaction.mapTransactionToEntity();
         transactionRepository.save(transactionEntity);
 
@@ -53,11 +51,17 @@ public class TransactionService {
     }
 
     @Transactional
-    public Transaction withdraw(UUID authenticatedUserId, UUID sourceWalletId, Money amount) {
-        if(!walletService.verifyOwnership(sourceWalletId, authenticatedUserId))
-            throw new IllegalArgumentException("User doesn't own this wallet!");
+    public Transaction withdraw(UUID authenticatedUserId, UUID idempotencyKey, UUID sourceWalletId, Money amount) {
+        Optional<TransactionEntity> dupeTransaction = transactionRepository.findByIdempotencyKey(idempotencyKey);
+        if(dupeTransaction.isPresent()) {
+            return dupeTransaction.get().mapEntityToTransaction();
+        }
 
-        Transaction transaction = Transaction.withdraw(sourceWalletId, amount);
+        if(!walletService.verifyOwnership(sourceWalletId, authenticatedUserId)) {
+            throw new IllegalArgumentException("User doesn't own this wallet!");
+        }
+
+        Transaction transaction = Transaction.withdraw(sourceWalletId, idempotencyKey, amount);
         TransactionEntity transactionEntity = transaction.mapTransactionToEntity();
         transactionRepository.save(transactionEntity);
 
@@ -84,11 +88,17 @@ public class TransactionService {
     }
 
     @Transactional
-    public Transaction transfer(UUID authenticatedUserId, UUID sourceWalletId, UUID destinationWalletId, Money amount) {
-        if(!walletService.verifyOwnershipWithoutLock(sourceWalletId, authenticatedUserId))
-            throw new IllegalArgumentException("User doesn't own this wallet!");
+    public Transaction transfer(UUID authenticatedUserId, UUID idempotencyKey, UUID sourceWalletId, UUID destinationWalletId, Money amount) {
+        Optional<TransactionEntity> dupeTransaction = transactionRepository.findByIdempotencyKey(idempotencyKey);
+        if(dupeTransaction.isPresent()) {
+            return dupeTransaction.get().mapEntityToTransaction();
+        }
 
-        Transaction transaction = Transaction.transfer(sourceWalletId, destinationWalletId, amount);
+        if(!walletService.verifyOwnershipWithoutLock(sourceWalletId, authenticatedUserId)) {
+            throw new IllegalArgumentException("User doesn't own this wallet!");
+        }
+
+        Transaction transaction = Transaction.transfer(sourceWalletId, destinationWalletId, idempotencyKey, amount);
         TransactionEntity transactionEntity = transaction.mapTransactionToEntity();
         transactionRepository.save(transactionEntity);
 

@@ -2,7 +2,6 @@ package org.example.transaction;
 
 import org.example.exceptions.IllegalStatusTransitionException;
 import org.example.money.Money;
-import org.example.money.MoneyEntity;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -10,6 +9,7 @@ import java.util.UUID;
 
 public class Transaction {
     private final UUID id;
+    private UUID idempotencyKey;
     private final UUID sourceWalletId;
     private final UUID destinationWalletId;
     private final Money amount;
@@ -18,8 +18,9 @@ public class Transaction {
     private final LocalDateTime createdAt;
     private LocalDateTime processedAt;
 
-    private Transaction(UUID id, UUID sourceWalletId, UUID destinationWalletId, Money amount, TransactionType type, TransactionStatus status, LocalDateTime createdAt, LocalDateTime processedAt) {
+    private Transaction(UUID id, UUID idempotencyKey, UUID sourceWalletId, UUID destinationWalletId, Money amount, TransactionType type, TransactionStatus status, LocalDateTime createdAt, LocalDateTime processedAt) {
         this.id = id;
+        this.idempotencyKey = idempotencyKey;
         this.sourceWalletId = sourceWalletId;
         this.destinationWalletId = destinationWalletId;
         this.amount = amount;
@@ -29,25 +30,25 @@ public class Transaction {
         this.processedAt = processedAt;
     }
 
-    public static Transaction deposit(UUID destinationWalletId, Money amount) {
+    public static Transaction deposit(UUID destinationWalletId, UUID idempotencyKey, Money amount) {
         UUID id = UUID.randomUUID();
         TransactionType type = TransactionType.DEPOSIT;
         TransactionStatus status = TransactionStatus.PENDING;
         LocalDateTime createdAt = LocalDateTime.now();
 
-        return new Transaction(id, null, destinationWalletId, amount, type, status, createdAt, null);
+        return new Transaction(id, idempotencyKey, null, destinationWalletId, amount, type, status, createdAt, null);
     }
 
-    public static Transaction withdraw(UUID sourceWalletId, Money amount) {
+    public static Transaction withdraw(UUID sourceWalletId, UUID idempotencyKey, Money amount) {
         UUID id = UUID.randomUUID();
         TransactionType type = TransactionType.WITHDRAWAL;
         TransactionStatus status = TransactionStatus.PENDING;
         LocalDateTime createdAt = LocalDateTime.now();
 
-        return new Transaction(id, sourceWalletId, null, amount, type, status, createdAt, null);
+        return new Transaction(id, idempotencyKey, sourceWalletId, null, amount, type, status, createdAt, null);
     }
 
-    public static Transaction transfer(UUID sourceWalletId, UUID destinationWalletId, Money amount) {
+    public static Transaction transfer(UUID sourceWalletId, UUID destinationWalletId, UUID idempotencyKey, Money amount) {
         if(sourceWalletId.equals(destinationWalletId))
             throw new IllegalArgumentException("Cannot transfer to the same wallet!");
 
@@ -56,11 +57,11 @@ public class Transaction {
         TransactionStatus status = TransactionStatus.PENDING;
         LocalDateTime createdAt = LocalDateTime.now();
 
-        return new Transaction(id, sourceWalletId, destinationWalletId, amount, type, status, createdAt, null);
+        return new Transaction(id, idempotencyKey, sourceWalletId, destinationWalletId, amount, type, status, createdAt, null);
     }
 
-    static Transaction reconstitute(UUID id, UUID sourceId, UUID destinationId, Money amount, TransactionType type, TransactionStatus status, LocalDateTime createdAt, LocalDateTime processedAt) {
-        return new Transaction(id, sourceId, destinationId, amount, type, status, createdAt, processedAt);
+    static Transaction reconstitute(UUID id, UUID idempotencyKey, UUID sourceId, UUID destinationId, Money amount, TransactionType type, TransactionStatus status, LocalDateTime createdAt, LocalDateTime processedAt) {
+        return new Transaction(id, idempotencyKey, sourceId, destinationId, amount, type, status, createdAt, processedAt);
     }
 
     public void complete() {
@@ -86,6 +87,8 @@ public class Transaction {
     public UUID getId() {
         return id;
     }
+
+    public UUID getIdempotencyKey() {return idempotencyKey;}
 
     public Optional<UUID> getSourceWalletId() {
         return Optional.ofNullable(sourceWalletId);
@@ -120,6 +123,6 @@ public class Transaction {
     }
 
     public TransactionEntity mapTransactionToEntity() {
-        return new TransactionEntity(this.getId(), this.getSourceWalletId().orElse(null), this.getDestinationWalletId().orElse(null), this.getAmount(), this.getTransactionType(), this.getTransactionStatus(), this.getCreatedAt(), this.getProcessedAt().orElse(null));
+        return new TransactionEntity(this.getId(), this.getIdempotencyKey(), this.getSourceWalletId().orElse(null), this.getDestinationWalletId().orElse(null), this.getAmount(), this.getTransactionType(), this.getTransactionStatus(), this.getCreatedAt(), this.getProcessedAt().orElse(null));
     }
 }

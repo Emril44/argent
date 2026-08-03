@@ -6,6 +6,7 @@ import org.example.wallet.Wallet;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -16,7 +17,7 @@ public class TransactionModelTest {
         User guy = new User("feef", "feef@feef.feef", "sarlifhgvbwoaesldfhobg");
         Wallet guyWallet = guy.openWallet();
 
-        assertDoesNotThrow(() -> Transaction.deposit(guyWallet.getId(), new Money(new BigDecimal("100.00"))));
+        assertDoesNotThrow(() -> Transaction.deposit(guyWallet.getId(), UUID.randomUUID(), new Money(new BigDecimal("100.00"))));
     }
 
     @Test
@@ -24,20 +25,20 @@ public class TransactionModelTest {
         User guy = new User("feef", "feef@feef.feef", "sarlifhgvbwoaesldfhobg");
         Wallet guyWallet = guy.openWallet();
 
-        Transaction.deposit(guyWallet.getId(), new Money(new BigDecimal("100.00")));
-        assertDoesNotThrow(() -> Transaction.withdraw(guyWallet.getId(), new Money(new BigDecimal("100.00"))));
+        Transaction.deposit(guyWallet.getId(), UUID.randomUUID(), new Money(new BigDecimal("100.00")));
+        assertDoesNotThrow(() -> Transaction.withdraw(guyWallet.getId(), UUID.randomUUID(), new Money(new BigDecimal("100.00"))));
     }
 
     @Test
     public void correctTransferInit() {
         User guy = new User("feef", "feef@feef.feef", "sarlifhgvbwoaesldfhobg");
         Wallet guyWallet = guy.openWallet();
-        Transaction.deposit(guyWallet.getId(), new Money(new BigDecimal("100.00")));
+        Transaction.deposit(guyWallet.getId(), UUID.randomUUID(), new Money(new BigDecimal("100.00")));
 
         User dude = new User("fofe", "fofe@fofe.fofe", "lkdjnbldkjfgsytuyhr");
         Wallet dudeWallet = dude.openWallet();
 
-        assertDoesNotThrow(() -> Transaction.transfer(guyWallet.getId(), dudeWallet.getId(), new Money(new BigDecimal("100.00"))));
+        assertDoesNotThrow(() -> Transaction.transfer(guyWallet.getId(), dudeWallet.getId(), UUID.randomUUID(), new Money(new BigDecimal("100.00"))));
     }
 
     @Test
@@ -45,7 +46,7 @@ public class TransactionModelTest {
         User guy = new User("feef", "feef@feef.feef", "sarlifhgvbwoaesldfhobg");
         Wallet guyWallet = guy.openWallet();
 
-        assertThrows(IllegalArgumentException.class, () -> Transaction.transfer(guyWallet.getId(), guyWallet.getId(), new Money(new BigDecimal("1.00"))));
+        assertThrows(IllegalArgumentException.class, () -> Transaction.transfer(guyWallet.getId(), guyWallet.getId(), UUID.randomUUID(), new Money(new BigDecimal("1.00"))));
     }
 
     @Test
@@ -53,7 +54,7 @@ public class TransactionModelTest {
         User guy = new User("feef", "feef@feef.feef", "sarlifhgvbwoaesldfhobg");
         Wallet guyWallet = guy.openWallet();
 
-        Transaction trans = Transaction.deposit(guyWallet.getId(), new Money(new BigDecimal("100.00")));
+        Transaction trans = Transaction.deposit(guyWallet.getId(), UUID.randomUUID(), new Money(new BigDecimal("100.00")));
 
         assertDoesNotThrow(trans::complete);
     }
@@ -63,7 +64,7 @@ public class TransactionModelTest {
         User guy = new User("feef", "feef@feef.feef", "sarlifhgvbwoaesldfhobg");
         Wallet guyWallet = guy.openWallet();
 
-        Transaction trans = Transaction.deposit(guyWallet.getId(), new Money(new BigDecimal("100.00")));
+        Transaction trans = Transaction.deposit(guyWallet.getId(), UUID.randomUUID(),  new Money(new BigDecimal("100.00")));
 
         assertDoesNotThrow(trans::fail);
     }
@@ -73,7 +74,7 @@ public class TransactionModelTest {
         User guy = new User("feef", "feef@feef.feef", "sarlifhgvbwoaesldfhobg");
         Wallet guyWallet = guy.openWallet();
 
-        Transaction trans = Transaction.deposit(guyWallet.getId(), new Money(new BigDecimal("100.00")));
+        Transaction trans = Transaction.deposit(guyWallet.getId(), UUID.randomUUID(), new Money(new BigDecimal("100.00")));
 
         trans.fail();
         assertThrows(IllegalStatusTransitionException.class, trans::complete);
@@ -84,7 +85,7 @@ public class TransactionModelTest {
         User guy = new User("feef", "feef@feef.feef", "sarlifhgvbwoaesldfhobg");
         Wallet guyWallet = guy.openWallet();
 
-        Transaction trans = Transaction.deposit(guyWallet.getId(), new Money(new BigDecimal("100.00")));
+        Transaction trans = Transaction.deposit(guyWallet.getId(), UUID.randomUUID(), new Money(new BigDecimal("100.00")));
 
         trans.complete();
         assertThrows(IllegalStatusTransitionException.class, trans::fail);
@@ -95,7 +96,7 @@ public class TransactionModelTest {
         User guy = new User("feef", "feef@feef.feef", "sarlifhgvbwoaesldfhobg");
         Wallet guyWallet = guy.openWallet();
 
-        Transaction trans = Transaction.deposit(guyWallet.getId(), new Money(new BigDecimal("100.00")));
+        Transaction trans = Transaction.deposit(guyWallet.getId(), UUID.randomUUID(), new Money(new BigDecimal("100.00")));
 
         trans.complete();
         assertThrows(IllegalStatusTransitionException.class, trans::complete);
@@ -106,7 +107,7 @@ public class TransactionModelTest {
         User guy = new User("feef", "feef@feef.feef", "sarlifhgvbwoaesldfhobg");
         Wallet guyWallet = guy.openWallet();
 
-        Transaction trans = Transaction.deposit(guyWallet.getId(), new Money(new BigDecimal("100.00")));
+        Transaction trans = Transaction.deposit(guyWallet.getId(), UUID.randomUUID(), new Money(new BigDecimal("100.00")));
 
         trans.fail();
         assertThrows(IllegalStatusTransitionException.class, trans::fail);

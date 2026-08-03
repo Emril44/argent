@@ -16,6 +16,9 @@ public class TransactionEntity {
     @Column(columnDefinition = "uuid")
     private UUID id;
 
+    @Column(name = "idempotency_key")
+    private UUID idempotencyKey;
+
     private UUID sourceId;
     private UUID destinationId;
 
@@ -37,8 +40,9 @@ public class TransactionEntity {
 
     public TransactionEntity() {}
 
-    public TransactionEntity(UUID id, UUID sourceWalletId, UUID destinationWalletId, Money amount, TransactionType type, TransactionStatus status, LocalDateTime createdAt, LocalDateTime processedAt) {
+    public TransactionEntity(UUID id, UUID idempotencyKey, UUID sourceWalletId, UUID destinationWalletId, Money amount, TransactionType type, TransactionStatus status, LocalDateTime createdAt, LocalDateTime processedAt) {
         this.id = id;
+        this.idempotencyKey = idempotencyKey;
         this.sourceId = sourceWalletId;
         this.destinationId = destinationWalletId;
         this.amount = MoneyEntity.mapMoneyToEntity(amount);
@@ -51,6 +55,8 @@ public class TransactionEntity {
     public UUID getId() {
         return id;
     }
+
+    public UUID getIdempotencyKey(){return idempotencyKey;}
 
     public UUID getSourceId() {
         return sourceId;
@@ -91,7 +97,7 @@ public class TransactionEntity {
         return mappedTransactions;
     }
 
-    private Transaction mapEntityToTransaction() {
-        return Transaction.reconstitute(this.getId(), this.getSourceId(), this.getDestinationId(), this.getAmount().mapEntityToMoney(), this.getType(), this.getStatus(), this.getCreatedAt(), this.getProcessedAt());
+    Transaction mapEntityToTransaction() {
+        return Transaction.reconstitute(this.getId(), this.getIdempotencyKey(), this.getSourceId(), this.getDestinationId(), this.getAmount().mapEntityToMoney(), this.getType(), this.getStatus(), this.getCreatedAt(), this.getProcessedAt());
     }
 }
