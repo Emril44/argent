@@ -3,6 +3,7 @@ package org.example.transaction;
 import jakarta.transaction.Transactional;
 import org.example.money.Money;
 import org.example.wallet.WalletService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -12,10 +13,12 @@ import java.util.UUID;
 public class TransactionService {
     private final WalletService walletService;
     private final TransactionRepository transactionRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public TransactionService(WalletService walletService, TransactionRepository transactionRepository) {
+    public TransactionService(WalletService walletService, TransactionRepository transactionRepository, ApplicationEventPublisher publisher) {
         this.walletService = walletService;
         this.transactionRepository = transactionRepository;
+        this.eventPublisher = publisher;
     }
 
     @Transactional
@@ -40,6 +43,7 @@ public class TransactionService {
             transaction.fail();
             transactionEntity = transaction.mapTransactionToEntity();
             transactionRepository.save(transactionEntity);
+            eventPublisher.publishEvent(new TransactionCompletedEvent(authenticatedUserId, transaction.getId(), transaction.getProcessedAt().orElseThrow(), TransactionStatus.FAILED));
             return transaction;
         }
         walletService.credit(destinationWalletId, amount);
@@ -47,6 +51,7 @@ public class TransactionService {
         transactionEntity = transaction.mapTransactionToEntity();
         transactionRepository.save(transactionEntity);
 
+        eventPublisher.publishEvent(new TransactionCompletedEvent(authenticatedUserId, transaction.getId(), transaction.getProcessedAt().orElseThrow(), TransactionStatus.SUCCESS));
         return transaction;
     }
 
@@ -72,6 +77,7 @@ public class TransactionService {
             transaction.fail();
             transactionEntity = transaction.mapTransactionToEntity();
             transactionRepository.save(transactionEntity);
+            eventPublisher.publishEvent(new TransactionCompletedEvent(authenticatedUserId, transaction.getId(), transaction.getProcessedAt().orElseThrow(), TransactionStatus.FAILED));
             return transaction;
         }
         if(walletService.debit(sourceWalletId, amount)) {
@@ -84,6 +90,7 @@ public class TransactionService {
         transactionEntity = transaction.mapTransactionToEntity();
         transactionRepository.save(transactionEntity);
 
+        eventPublisher.publishEvent(new TransactionCompletedEvent(authenticatedUserId, transaction.getId(), transaction.getProcessedAt().orElseThrow(), TransactionStatus.SUCCESS));
         return transaction;
     }
 
@@ -109,6 +116,7 @@ public class TransactionService {
             transaction.fail();
             transactionEntity = transaction.mapTransactionToEntity();
             transactionRepository.save(transactionEntity);
+            eventPublisher.publishEvent(new TransactionCompletedEvent(authenticatedUserId, transaction.getId(), transaction.getProcessedAt().orElseThrow(), TransactionStatus.FAILED));
             return transaction;
         }
         if(walletService.transfer(sourceWalletId, destinationWalletId, amount))
@@ -119,6 +127,7 @@ public class TransactionService {
         transactionEntity = transaction.mapTransactionToEntity();
         transactionRepository.save(transactionEntity);
 
+        eventPublisher.publishEvent(new TransactionCompletedEvent(authenticatedUserId, transaction.getId(), transaction.getProcessedAt().orElseThrow(), TransactionStatus.SUCCESS));
         return transaction;
     }
 }
