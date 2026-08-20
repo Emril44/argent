@@ -10,4 +10,16 @@ public class UserRegisteredEvent {
         this.email = email;
         this.status = status;
     }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public UserStatus getStatus() {
+        return status;
+    }
 }
