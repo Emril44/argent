@@ -1,11 +1,16 @@
 package org.example.wallet;
 
+import jakarta.transaction.Transactional;
 import org.example.exceptions.InsufficientFundsException;
 import org.example.money.Money;
+import org.example.user.User;
 import org.example.user.UserEntity;
 import org.example.user.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
+import java.rmi.NoSuchObjectException;
+import java.util.MissingResourceException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -87,6 +92,61 @@ public class WalletService {
         walletRepository.save(sourceEntity);
         walletRepository.save(destinationEntity);
         return true;
+    }
+
+    @Transactional
+    public Wallet createWallet(UUID userId) {
+        UserEntity foundUser = userRepository.findById(userId).orElseThrow();
+        User mappedUser = foundUser.mapEntityToUser();
+        Wallet newWallet = mappedUser.openWallet();
+        walletRepository.save(newWallet.mapWalletToEntity(foundUser));
+        return newWallet;
+    }
+
+    public Wallet getWallet(UUID walletId, UUID userId) throws AccessDeniedException {
+        WalletEntity foundWallet = walletRepository.findById(walletId).orElseThrow();
+        UserEntity foundUser = userRepository.findById(userId).orElseThrow();
+        if(!foundWallet.getOwner().getId().equals(foundUser.getId())) {
+            throw new AccessDeniedException("User doesn't own this wallet!");
+        }
+
+        User correctUser = foundUser.mapEntityToUser();
+        return foundWallet.mapEntityToWallet(correctUser);
+    }
+
+    @Transactional
+    public Wallet freezeWallet(UUID walletId, UUID userId) throws AccessDeniedException {
+        Result result = getResult(walletId, userId);
+
+        User correctUser = result.foundUser.mapEntityToUser();
+        Wallet correctWallet = result.foundWallet.mapEntityToWallet(correctUser);
+        correctWallet.freeze();
+        walletRepository.save(correctWallet.mapWalletToEntity(result.foundUser));
+        return correctWallet;
+    }
+
+    @Transactional
+    public Wallet unfreezeWallet(UUID walletId, UUID userId) throws AccessDeniedException {
+        Result result = getResult(walletId, userId);
+
+        User correctUser = result.foundUser().mapEntityToUser();
+        Wallet correctWallet = result.foundWallet().mapEntityToWallet(correctUser);
+        correctWallet.unfreeze();
+        walletRepository.save(correctWallet.mapWalletToEntity(result.foundUser()));
+        return correctWallet;
+    }
+
+    private Result getResult(UUID walletId, UUID userId) throws AccessDeniedException {
+        WalletEntity foundWallet = walletRepository.findByIdWithLock(walletId);
+        UserEntity foundUser = userRepository.findById(userId).orElseThrow();
+        if(!foundWallet.getOwner().getId().equals(foundUser.getId())) {
+            throw new AccessDeniedException("User doesn't own this wallet!");
+        }
+        Result result = new Result(foundWallet, foundUser);
+        return result;
+    }
+
+    private record Result(WalletEntity foundWallet, UserEntity foundUser) {
     }
 
     private WalletEntity loadEntity(UUID walletId) {

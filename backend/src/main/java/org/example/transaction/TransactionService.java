@@ -130,4 +130,10 @@ public class TransactionService {
         eventPublisher.publishEvent(new TransactionCompletedEvent(authenticatedUserId, transaction.getId(), transaction.getProcessedAt().orElseThrow(), TransactionStatus.SUCCESS));
         return transaction;
     }
+
+    public Transaction fetchTransaction(UUID transId) {
+        TransactionEntity foundEntity = transactionRepository.findById(transId).orElseThrow();
+
+        return foundEntity.mapEntityToTransaction();
+    }
 }

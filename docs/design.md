@@ -76,10 +76,10 @@ Represents a user-controlled financial container.
 Attributes:
 
 - id   
-- owner  
-- balance (Money)  
-- status (ACTIVE / FROZEN)  
-- createdAt
+  - owner  
+  - balance (Money)  
+  - status (ACTIVE / FROZEN)  
+  - createdAt
 
 Invariants:
 
