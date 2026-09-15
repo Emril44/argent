@@ -1,20 +1,22 @@
-# ADR-001: Authentication for V1 — Server-Side Sessions (Secure Cookies)
+# ADR-001: Authentication for V0.1 — Server-Side Sessions (Secure Cookies)
 
 Date: 2026-02-15  
 Status: Accepted  
 Project: Argent
 
+_Amended: 2026-09-06_
+
 ## Context
 
-Argent V1 is a single-developer, modular-monolith system intended to model financial-system integrity (precision, atomicity, auditability, idempotency). Authentication must be secure in a browser environment and support fast revocation.
+Argent V0.1 is a single-developer, modular-monolith system intended to model financial-system integrity (precision, atomicity, auditability, idempotency). Authentication must be secure in a browser environment and support fast revocation.
 
 Previous projects used JWT stored in `localStorage`, which is not acceptable for Argent due to token exposure risk under XSS.
 
 ## Decision
 
-Argent V1 will use **server-side session authentication** with a **Secure, HttpOnly cookie** carrying a session identifier.
+Argent V0.1 will use **server-side session authentication** with a **Secure, HttpOnly cookie** carrying a session identifier.
 
-- On successful login, the server creates a session record (DB-backed for V1).
+- On successful login, the server creates a session record (in-memory first, Redis deferred to V0.3).
 - The client receives a cookie containing a session ID.
 - Each request is authenticated by validating the session ID and resolving a `UserContext` / `Principal`.
 
@@ -26,14 +28,14 @@ Cookie requirements:
 Session requirements:
 - Server-side expiration (idle + absolute timeout)
 - Logout invalidates the session server-side
-- Basic rate limiting on login attempts
+- Basic rate limiting on login attempts **(deferred to v0.3)**
 - Generic error messaging for failed login (“Invalid email or password”)
 
 ## Rationale
 
 - **Browser-safe by default**: avoids `localStorage` token theft via XSS.
 - **Easy revocation**: deleting a session immediately removes access.
-- **Lower complexity** for V1 compared to access/refresh token lifecycles.
+- **Lower complexity** for V0.1 compared to access/refresh token lifecycles.
 - Fits modular monolith scope: avoids introducing distributed token revocation concerns.
 
 ## Consequences
@@ -45,7 +47,7 @@ Session requirements:
 
 ### Negative
 - Requires server-side session storage and cleanup.
-- If cookies are used for auth, state-changing requests may require CSRF considerations depending on client architecture.
+- If cookies are used for auth, state-changing requests may require CSRF considerations depending on client architecture. **CSRF mitigation strategy will be listed in ADR-012**.
 
 ## Alternatives Considered
 
@@ -56,7 +58,7 @@ Session requirements:
    Viable, but deferred to a future milestone due to additional complexity (refresh rotation, reuse detection, token storage).
 
 3. **OAuth2/OIDC**  
-   Rejected for V1 to avoid integration scope creep; not core to Argent’s transaction integrity goals.
+   Rejected for V0.1 to avoid integration scope creep; not core to Argent’s transaction integrity goals.
 
 ## Notes / Migration Path (V2+)
 
