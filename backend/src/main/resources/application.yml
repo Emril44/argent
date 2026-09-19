@@ -20,3 +20,11 @@ spring:
 logging:
   level:
     com.zaxxer.hikari: INFO
+
+server:
+  servlet:
+    session:
+      cookie:
+        same-site: lax
+        http-only: true
+        secure: false
