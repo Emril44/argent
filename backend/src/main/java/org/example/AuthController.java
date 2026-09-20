@@ -2,6 +2,7 @@ package org.example;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.example.user.ArgentUserDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,5 +34,16 @@ public class AuthController {
         ArgentUserDetails userDetails = (ArgentUserDetails) authentication.getPrincipal();
 
         return ResponseEntity.status(HttpStatus.OK).body(new LoginResponse(userDetails.getUserId(), userDetails.getName()));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if(session != null) {
+            session.invalidate();
+        }
+
+        SecurityContextHolder.clearContext();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
