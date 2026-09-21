@@ -1,7 +1,9 @@
 package org.example.wallet;
 
+import org.example.user.ArgentUserDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
@@ -24,9 +26,9 @@ public class WalletController {
     }
 
     @GetMapping("/{walletId}")
-    public ResponseEntity<WalletResponse> fetchWalletDetails(@PathVariable UUID walletId, @RequestHeader UUID userId) {
+    public ResponseEntity<WalletResponse> fetchWalletDetails(@PathVariable UUID walletId, @AuthenticationPrincipal ArgentUserDetails userDetails) {
         try {
-            Wallet foundWallet = walletService.getWallet(walletId, userId);
+            Wallet foundWallet = walletService.getWallet(walletId, userDetails.getUserId());
             WalletResponse walletResponse = new WalletResponse(foundWallet.getId(), foundWallet.getOwner().getId(), foundWallet.getBalance(), foundWallet.getStatus(), foundWallet.getCreatedAt());
             return ResponseEntity.status(HttpStatus.OK).body(walletResponse);
         } catch (AccessDeniedException e) {
@@ -35,9 +37,9 @@ public class WalletController {
     }
 
     @PatchMapping("/{walletId}/freeze")
-    public ResponseEntity<WalletResponse> freezeWallet(@PathVariable UUID walletId, @RequestHeader UUID userId) {
+    public ResponseEntity<WalletResponse> freezeWallet(@PathVariable UUID walletId, @AuthenticationPrincipal ArgentUserDetails userDetails) {
         try {
-            Wallet freezeWallet = walletService.freezeWallet(walletId, userId);
+            Wallet freezeWallet = walletService.freezeWallet(walletId, userDetails.getUserId());
             WalletResponse walletResponse = new WalletResponse(freezeWallet.getId(), freezeWallet.getOwner().getId(), freezeWallet.getBalance(), freezeWallet.getStatus(), freezeWallet.getCreatedAt());
             return ResponseEntity.status(HttpStatus.OK).body(walletResponse);
         } catch (AccessDeniedException e) {
@@ -46,9 +48,9 @@ public class WalletController {
     }
 
     @PatchMapping("/{walletId}/unfreeze")
-    public ResponseEntity<WalletResponse> unfreezeWallet(@PathVariable UUID walletId, @RequestHeader UUID userId) {
+    public ResponseEntity<WalletResponse> unfreezeWallet(@PathVariable UUID walletId, @AuthenticationPrincipal ArgentUserDetails userDetails) {
         try {
-            Wallet unfreezeWallet = walletService.unfreezeWallet(walletId, userId);
+            Wallet unfreezeWallet = walletService.unfreezeWallet(walletId, userDetails.getUserId());
             WalletResponse walletResponse = new WalletResponse(unfreezeWallet.getId(), unfreezeWallet.getOwner().getId(), unfreezeWallet.getBalance(), unfreezeWallet.getStatus(), unfreezeWallet.getCreatedAt());
             return ResponseEntity.status(HttpStatus.OK).body(walletResponse);
         } catch (AccessDeniedException e) {
