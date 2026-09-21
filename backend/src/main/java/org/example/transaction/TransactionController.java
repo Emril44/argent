@@ -1,8 +1,10 @@
 package org.example.transaction;
 
 import org.example.money.Money;
+import org.example.user.ArgentUserDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -17,22 +19,22 @@ public class TransactionController {
     }
 
     @PostMapping("/deposit")
-    public ResponseEntity<TransactionResponse> deposit(@RequestBody TransactionRequest request, @RequestHeader UUID userId) {
-        Transaction newDeposit = transactionService.deposit(userId, request.getIdempotencyKey(), request.getWalletId(), new Money(request.getAmount()));
+    public ResponseEntity<TransactionResponse> deposit(@RequestBody TransactionRequest request, @AuthenticationPrincipal ArgentUserDetails userDetails) {
+        Transaction newDeposit = transactionService.deposit(userDetails.getUserId(), request.getIdempotencyKey(), request.getWalletId(), new Money(request.getAmount()));
         TransactionResponse response = new TransactionResponse(newDeposit.getId(), newDeposit.getIdempotencyKey(), null, newDeposit.getDestinationWalletId().orElse(null), newDeposit.getAmount(), newDeposit.getTransactionType(), newDeposit.getTransactionStatus(), newDeposit.getCreatedAt(), newDeposit.getProcessedAt().orElse(null));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/withdraw")
-    public ResponseEntity<TransactionResponse> withdraw(@RequestBody TransactionRequest request, @RequestHeader UUID userId) {
-        Transaction newWithdraw = transactionService.withdraw(userId, request.getIdempotencyKey(), request.getWalletId(), new Money(request.getAmount()));
+    public ResponseEntity<TransactionResponse> withdraw(@RequestBody TransactionRequest request, @AuthenticationPrincipal ArgentUserDetails userDetails) {
+        Transaction newWithdraw = transactionService.withdraw(userDetails.getUserId(), request.getIdempotencyKey(), request.getWalletId(), new Money(request.getAmount()));
         TransactionResponse response = new TransactionResponse(newWithdraw.getId(), newWithdraw.getIdempotencyKey(), newWithdraw.getSourceWalletId().orElse(null), null, newWithdraw.getAmount(), newWithdraw.getTransactionType(), newWithdraw.getTransactionStatus(), newWithdraw.getCreatedAt(), newWithdraw.getProcessedAt().orElse(null));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/transfer")
-    public ResponseEntity<TransactionResponse> transfer(@RequestBody TransactionTransferRequest request, @RequestHeader UUID userId) {
-        Transaction newTransfer = transactionService.transfer(userId, request.getIdempotencyKey(), request.getSourceId(), request.getDestinationId(), new Money(request.getAmount()));
+    public ResponseEntity<TransactionResponse> transfer(@RequestBody TransactionTransferRequest request, @AuthenticationPrincipal ArgentUserDetails userDetails) {
+        Transaction newTransfer = transactionService.transfer(userDetails.getUserId(), request.getIdempotencyKey(), request.getSourceId(), request.getDestinationId(), new Money(request.getAmount()));
         TransactionResponse response = new TransactionResponse(newTransfer.getId(), newTransfer.getIdempotencyKey(), newTransfer.getSourceWalletId().orElse(null), newTransfer.getDestinationWalletId().orElse(null), newTransfer.getAmount(), newTransfer.getTransactionType(), newTransfer.getTransactionStatus(), newTransfer.getCreatedAt(), newTransfer.getProcessedAt().orElse(null));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
