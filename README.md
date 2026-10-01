@@ -1,4 +1,4 @@
-# argent
+# ARGENT
 Backend-focused financial transaction integrity simulator modeling atomic transfers, idempotency, pessimistic locking, and financial invariants using a modular monolith architecture.
 
 ## Core Principles
@@ -87,5 +87,23 @@ Concurrency test suite uses `ExecutorService` and `CountDownLatch` to manufactur
 ## Status
 **V0.1 complete.** Core backend feature-complete - domain modeling, persistence, concurrency control, idempotency, event-driven notifications, REST API, containerised deployment.
 
+### Roadmap
 
-**V0.2 planned:** _Spring Security_ (session auth, _BCrypt_), frontend (_React_), observability (_Prometheus + Grafana_), CI/CD pipeline, cloud deployment.
+#### v0.2 - Security & CI/CD
+- [ ] Spring Security: session auth, BCrypt
+- [ ] Authorization checks on wallet endpoints (prevent IDOR)
+- [ ] Input validation, rate limiting
+- [ ] CI/CD pipeline (GitHub Actions) running Testcontainers suite on push
+#### v0.3 - Cloud Infrastructure (AWS)
+- [ ] Terraform: VPC (public/private subnets)
+- [ ] RDS (replacing containerized Postgres in deployed env)
+- [ ] ECS Fargate service
+- [ ] Application Load Balancer
+- [ ] Secrets Manager for credentials
+- [ ] S3 remote Terraform state backend
+#### v0.4 - Observability
+- [ ] Prometheus + Grafana (or CloudWatch)
+- [ ] Graylog centralized logging
+#### v1.0 - Frontend & Polish
+- [ ] React frontend (React Bits)
+- [ ] README pass, architecture diagram
